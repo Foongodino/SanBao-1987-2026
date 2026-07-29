@@ -1,0 +1,404 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6efe4">
+  <title>&#19977;&#23542; 1987</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #fffdf8;
+      --ink: #24211d;
+      --muted: #766d62;
+      --line: #eadfce;
+      --warm: #f6efe4;
+      --accent: #244f7a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, "Noto Sans", sans-serif;
+      color: var(--ink);
+      background: linear-gradient(135deg, #fbf7ef, #eef5f4);
+    }
+    button, input, textarea, select { font: inherit; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 280px 1fr; }
+    aside {
+      background: rgba(255,253,248,.88);
+      border-right: 1px solid var(--line);
+      padding: 20px;
+      overflow: auto;
+      max-height: 100vh;
+    }
+    main { padding: 24px; }
+    h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: .02em; }
+    .small { color: var(--muted); font-size: 14px; }
+    .tabs, .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
+    .actions {
+      position: sticky;
+      top: 0;
+      z-index: 8;
+      background: rgba(255,253,248,.94);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 10px;
+      backdrop-filter: blur(14px);
+    }
+    button, select, input[type=color] {
+      border: 1px solid var(--line);
+      background: #fffaf1;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 9px 13px;
+      cursor: pointer;
+    }
+    button.active { background: var(--accent); color: white; border-color: var(--accent); }
+    .thumb {
+      width: 100%;
+      text-align: left;
+      border-radius: 16px;
+      margin: 8px 0;
+      padding: 12px;
+      background: white;
+    }
+    .thumb.active { outline: 2px solid var(--accent); }
+    .page {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      min-height: 68vh;
+      padding: 34px;
+      box-shadow: 0 18px 50px rgba(60,45,25,.09);
+    }
+    .page-title {
+      border: 0;
+      width: 100%;
+      background: transparent;
+      font-weight: 750;
+      color: var(--accent);
+      resize: vertical;
+      min-height: 54px;
+      outline: none;
+    }
+    .page-body {
+      border: 0;
+      width: 100%;
+      background: transparent;
+      color: var(--ink);
+      resize: vertical;
+      min-height: 260px;
+      line-height: 1.72;
+      outline: none;
+      margin-top: 14px;
+    }
+    .lanes { display: grid; gap: 22px; }
+    .compare { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .lane { border-left: 4px solid var(--line); padding-left: 16px; }
+    .label { color: var(--muted); margin-bottom: 8px; }
+    .tools { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .tools label { color: var(--muted); display: flex; gap: 8px; align-items: center; }
+    .presenting {
+      position: fixed; inset: 0; z-index: 10;
+      background: #11100f; color: white;
+      display: grid; place-items: center; padding: 32px;
+    }
+    .presenting.projector { background: #050504; }
+    .presenting.projector .present-card {
+      background: #050504;
+      color: #fff7df;
+      border-color: #756437;
+      box-shadow: none;
+    }
+    .presenting.projector .present-text {
+      font-size: clamp(14px, 1.45vw, 28px) !important;
+      line-height: 1.5;
+    }
+    .presenting.obs { background: #08110f; }
+    .presenting.obs .present-card {
+      background: rgba(0,0,0,.42);
+      color: white;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 18px 60px rgba(0,0,0,.28);
+    }
+    .present-card {
+      width: min(96vw, calc((100vh - 172px) * 19 / 6));
+      aspect-ratio: 19 / 6;
+      max-height: calc(100vh - 172px);
+      background: #fffdf8; color: var(--ink);
+      border-radius: 28px; padding: 48px;
+      display: flex; flex-direction: column; justify-content: center;
+      overflow: hidden;
+    }
+    .present-text { white-space: pre-wrap; line-height: 1.42; overflow: auto; }
+    .present-close { position: fixed; top: 18px; right: 18px; }
+    .mode-badge {
+      position: fixed;
+      top: 22px;
+      right: 118px;
+      z-index: 12;
+      color: rgba(255,255,255,.74);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: 12px;
+    }
+    .present-nav {
+      position: fixed;
+      left: 22px;
+      right: 22px;
+      bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      z-index: 12;
+    }
+    .present-nav div { display: flex; gap: 8px; }
+    .present-nav button, .present-close {
+      min-height: 44px;
+      min-width: 80px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.9);
+    }
+    .present-nav button:disabled { opacity: .42; cursor: not-allowed; }
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      aside { max-height: none; border-right: 0; border-bottom: 1px solid var(--line); }
+      .compare { grid-template-columns: 1fr; }
+      main { padding: 16px; }
+      .presenting { padding: 18px; align-items: start; padding-top: 72px; }
+      .present-card { width: min(96vw, calc((100vh - 160px) * 19 / 6)); max-height: calc(100vh - 160px); padding: 18px; }
+      .present-text { max-height: 100%; overflow: auto; font-size: clamp(12px, 4vw, 22px) !important; }
+      .present-close { top: 14px; right: 14px; min-width: 74px; }
+      .present-nav { left: 12px; right: 12px; bottom: 12px; }
+      .present-nav button { min-width: 0; padding: 9px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const seed = [{"id":"p01","color":"#244f7a","size":30,"align":"center","title":{"zh":"三寶","en":"Three Treasures","vi":"Tam Bảo"},"body":{"zh":"","en":"","vi":""}},{"id":"p02","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"各位前賢大德，大家好！恭喜！恭喜！恭喜大家今天已經得了上天的秘寶　　　【真天道】。這是先天大道，自古以來不輕意降世，我們能得道，真是三生有幸、祖上有餘德、前世有修、今世有守、有善根、有佛緣，要不然就算我們踏破鐵鞋也是無法得到的。","en":"Greetings to all virtuous seniors and wise ones. Congratulations! Congratulations! Congratulations to everyone today for having received Heaven\u0027s secret treasure, the one true Heavenly Way. This is the primordial Great Way, which since ancient times has not lightly descended into the world. For us to obtain the Way is truly fortune from three lifetimes, virtue left by our ancestors, cultivation in former lives, discipline in this life, good roots, and affinity with the Buddha. Otherwise, even if we wore out iron shoes searching, we still could not obtain it.","vi":"Kínhchàocácvịtiềnhiềnđạiđức. Xin chúcmừng! Chúcmừng! Chúcmừngmọingườihôm nay đãnhậnđượcbíbảocủa Trời, NhấtChân Thiên Đạo. Đâylà Tiên Thiên ĐạiĐạo, từxưađến nay khôngdễgiángxuốngthếgian. Chúng ta đượccầuĐạothậtlàphướcbađời, tổtiêncódưđức, đờitrướccótu, đờinàycógiữ, cóthiệncăn, cóPhậtduyên. Nếukhông, dùđimòngiàysắtcũngkhôngthểđược."}},{"id":"p03","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"我們要瞭解道與教的不同。世上的宗教有佛教、道教、儒教、基督教和回教。它們的宗旨主要是教育和教化、教人去邪心、留正念，化人改惡向善，使人明白因果的關係。可是道不但包含了教的意義，在世也可以修身立德，脫劫避難，將來百歲年老也能使我們「超生了死」。","en":"We must understand the difference between the Way and religion. The religions of the world include Buddhism, Taoism, Confucianism, Christianity, and Islam. Their main purpose is education and transformation: teaching people to remove improper thoughts, keep right mindfulness, change from evil to good, and understand the relationship of cause and effect. But the Way not only includes the meaning of teaching; while living in the world it can also help us cultivate ourselves, establish virtue, escape calamity and avoid disaster, and when we reach old age in the future it can enable us to \"transcend birth and death.\"","vi":"Chúng ta phảihiểusựkhácnhaugiữaĐạovàgiáo. Tôn giáotrênđờicóPhậtgiáo, Đạogiáo, Nho giáo, CơĐốcgiáovàHồigiáo. Mụcđíchchínhcủacáctôngiáolàgiáodụcvàgiáohóa, dạyngườibỏtàtâm, giữchánhniệm, đổiáchướngthiện, giúpngườihiểuquanhệnhânquả. NhưngĐạokhôngchỉ bao hàm ý nghĩacủagiáohóa; khicònsốngởđờicũngcóthểtuthânlậpđức, thoátkiếptránhnạn, vàkhitrămtuổigiàyếuvềsaucũngcóthểkhiếnchúng ta “siêusinhliễutử”."}},{"id":"p04","color":"#6d4aa2","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"「超生了死」就是免了生死輪迴。為什麼說求道可以超生了死呢？","en":"\"Transcending birth and death\" means being freed from the cycle of birth, death, and rebirth. Why is it said that seeking the Way can transcend birth and death?","vi":"“Siêusinhliễutử”nghĩalàthoátkhỏiluânhồisinhtử. VìsaonóicầuĐạocóthểsiêusinhliễutử?"}},{"id":"p05","color":"#8a6a1f","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"因為剛才跪在中間那位點傳師所讀的那張表文叫做龍文表，裏面有我們的真實姓名，這張表文讀完燒去以後，就是要懇請三官大帝替我們「地府抽名，天堂掛號」。地府既已除名，所以當我們百歲年老，去世後，就能直上天堂，免受閻羅王的裁判，免受地獄刑罰之苦，也免了四生六道輪迴之慘。","en":"Because the petition just read by the transmitting master kneeling in the center is called the Dragon Petition. It contains our true names. After this petition is read and burned, it is to respectfully ask the Three Officials Great Emperors to \"remove our names from the underworld and register us in Heaven.\" Since the underworld has already removed our names, when we reach old age and pass away, we can go directly to Heaven, avoid the judgment of King Yanluo (King Yama), avoid the suffering of punishments in hell, and also avoid the misery of rebirth through the four forms of birth and six paths.","vi":"Bởivìtờbiểuvănmàvịđiểmtruyềnsưvừaquỳởgiữađọcgọilà Long Văn Biểu, bêntrongcótênthậtcủachúng ta. Sau khiđọcxongvàđốttờbiểuvănnày, làthànhtâmthỉnhcầu Tam Quan ĐạiĐếthaychúng ta “rúttênkhỏiđịaphủ, ghidanhnơithiênđường”. Địaphủđãxóatênrồi, nênkhichúng ta trămtuổigiàyếu, saukhi qua đời, cóthểlênthẳngthiênđường, khỏichịuDiêm La Vương xétxử, khỏichịukhổhìnhphạtđịangục, vàcũngtránhkhỏithảmcảnhluânhồitrongtứsinhlụcđạo."}},{"id":"p06","color":"#4f6f52","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"道有這樣的寶貴，所以孔聖人說：「朝聞道，夕死可矣！」","en":"The Way is so precious; therefore Confucius said, \"If one hears the Way in the morning, one may die in the evening without regret.\"","vi":"Đạoquýbáunhưvậy, nênKhổng Thánh Nhânnói: “Sáng ngheĐạo, tốichếtcũngđược!”"}},{"id":"p07","color":"#244f7a","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"朝　=　早上，夕　=　晚上，早上能得聞這真理大道，即使不幸在晚上去世也是可以的。死是世間人所懼怕的，為什麼孔聖人不以世人所追求的金錢、名利、地位來比較而用道呢？這就像觀士音菩薩、釋迦牟尼佛，他們得了道，能夠超生了死，永居理天，所以聖人視死如歸，有如回去自己的家鄉一樣，又有什麼好可惜的呢？","en":"\"Morning\" means early day, and \"evening\" means night. If one can hear this true Great Way in the morning, then even if one unfortunately passes away at night, it is acceptable. Death is what people in the world fear. Why did Confucius not compare it with money, fame, profit, or position that worldly people pursue, but instead used the Way? It is like Guanyin Bodhisattva and Shakyamuni Buddha: after they obtained the Way, they could transcend birth and death and dwell forever in the Heaven of Principle. Therefore sages regard death as returning home, as if going back to their own native place. What is there to regret?","vi":"“Triêu” làbuổisáng, “tịch” làbuổitối. BuổisángcóthểngheđượcĐạiĐạochânlýnày, thìdùkhông may buổitối qua đờicũngđược. Chếtlàđiềungườiđờisợhãi. VìsaoKhổng Thánh Nhânkhôngdùngtiềnbạc, danhlợi, địavịmàngườiđờitheođuổiđể so sánh, màlạidùngĐạo? CũngnhưBồTát Quán ThếÂm, Phật Thích Ca Mâu Ni, cácNgàiđãđắcĐạo, cóthểsiêusinhliễutử, vĩnhcư Lý Thiên. Vìvậy Thánh nhânxemcáichếtnhưtrởvề, nhưvềquênhàcủamình, còncógìđángtiếc?"}},{"id":"p08","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"既然得道有這麼寶貴與奧妙，其中必有真機妙理，這真機妙理就是後學所要講的三寶，請大家詳細的聽。","en":"Since obtaining the Way is so precious and wonderful, there must be true mysteries and subtle principles within it. These true mysteries and subtle principles are the Three Treasures that I, the junior learner, am going to speak about. Please listen carefully.","vi":"ĐãnóiđắcĐạoquýbáuvàhuyềndiệunhưvậy, bêntrongchắcchắncóchâncơdiệulý. Châncơdiệulýấychínhlà Tam Bảo màhậuhọcsắptrìnhbày. Xin mọingườilắngnghekỹ."}},{"id":"p09","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"第一寶　———　【玄關】。","en":"The First Treasure: the Mystic Portal.","vi":"Bảo thứnhất: Huyền Quan."}},{"id":"p10","color":"#6d4aa2","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"第一寶就是剛點傳師所指的地方。在這個地方，不上不下，不偏不倚，有一個很小的洞，在佛家稱為正陽法門，在儒家孔子曰：「生我門，死我戶」，也就是指我們的生死門戶，什麼是門戶呢？","en":"It is the place the transmitting master pointed to just now. At this place, neither high nor low, neither slanted nor off-center, there is a very small opening. In Buddhism it is called the True Yang Dharma Gate. In Confucianism, Confucius said, \"The gate through which I am born, the door through which I die,\" referring to our gate of life and death. What is a gate or doorway?","vi":"Đólànơivịđiểmtruyềnsưvừachỉ. Ởnơinày, khôngcaokhôngthấp, khônglệchkhôngnghiêng, cómộtlỗrấtnhỏ. Trong Phậtgiagọilà Chánh Dương Pháp Môn. Trong Nho gia, KhổngTửnói: “Cửa ta sinh, cửa ta tử”, tứclàchỉcửangõsinhtửcủachúng ta. Vậycửangõlàgì?"}},{"id":"p11","color":"#8a6a1f","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"就好比我們剛才是由這扇門進來，當我們要離開的時候，也必須由這扇門出去，這個就是我們身體出入的門戶。但是，生死門戶乃是指我們靈魂出入的地方（玄關）。","en":"It is like how we just came in through this door; when we want to leave, we must also go out through this door. This is the doorway for our bodies to enter and exit. But the gate of life and death refers to the place where our soul enters and exits: the Mystic Portal.","vi":"Giốngnhưvừarồichúng ta đivào qua cánhcửanày; khimuốnrờiđi, cũngphảiđira qua cánhcửanày. Đólàcửaravàocủathânthểchúng ta. Nhưngcửangõsinhtửlàchỉnơilinhhồnchúng ta ravào, tứcHuyền Quan."}},{"id":"p12","color":"#4f6f52","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"當我們出生的時候，靈性就是由這個地方進入，當我們去世後，靈性也應該由這個地方出去才合理，但很可惜，當我們離開母胎〝哇〞的一聲，先天氣收，後天氣貫入，這玄關就緊閉不開，此竅不開，當我們百歲年老，靈性不能由這正陽法門出去，又要從什麼地方出去呢？這就要看我們在世的所作所為而定，在世若為非作歹，無惡不做的話，去世後靈性就會闖四門而為四生動物。","en":"When we are born, the spiritual nature enters through this place. After we pass away, it would be reasonable for the spiritual nature to leave through this place as well. Unfortunately, when we leave the mother\u0027s womb and cry \"wah,\" the prenatal qi withdraws and the postnatal qi pours in; then this Mystic Portal closes tightly and does not open. If this opening is not opened, when we are old and our spiritual nature cannot leave through the True Yang Dharma Gate, then from where will it leave? That depends on our actions while living. If in life one does evil and commits all kinds of wrongdoing, then after death the spiritual nature will break out through the four gates and become one of the four kinds of creatures.","vi":"Khi chúng ta sinhra, linhtánhđivàotừnơinày. Khi qua đời, linhtánhcũngnênđiratừnơinàymớihợplý. Nhưngrấttiếc, khirờikhỏithaimẹvàkhóc “oa” mộttiếng, tiênthiênkhíthulại, hậuthiênkhíquánnhập, Huyền Quan liềnđóngchặtkhôngmở. Khi khiếunàykhôngmở, lúctrămtuổigiàyếu, linhtánhkhôngthểrakhỏi Chánh Dương Pháp Môn, vậysẽratừđâu? Điềuđótùytheoviệclàmcủachúng ta khicònsống. Nếuởđờilàmđiều phi pháp, khôngácnàokhônglàm, saukhichếtlinhtánhsẽxôngrabốncửavàtrởthànhđộngvậtthuộctứsinh."}},{"id":"p13","color":"#244f7a","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"四門：—　眼、耳、鼻、口。","en":"The four gates: eyes, ears, nose, and mouth.","vi":"Bốncửa: mắt, tai, mũi, miệng."}},{"id":"p14","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"一個人在世如果沒有求道，玄關沒有被明師指開的話，去世時靈性若由（四門X X）出去，來世便轉為（不同的ＸＸ）動物。","en":"If a person has not sought the Way while alive, and the Mystic Portal has not been opened by an enlightened master, then when that person dies, if the spiritual nature exits through the four gates, in the next life it will turn into different kinds of animals.","vi":"NếumộtngườisốngởđờimàchưacầuĐạo, Huyền Quan chưađượcminhsưchỉmở, thìkhi qua đời, nếulinhtánhđiratừbốncửa, đờisausẽchuyểnthànhcácloàiđộngvậtkhácnhau."}},{"id":"p15","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【眼】：—　卵生動物。卵生是指孵卵所生的雞鳥之類，牠們的特點就是眼睛非常靈敏。就如老鷹在高空飛翔，仍然能看到地上的小動物。還有，這類動物所生的蛋跟我們的眼睛很相像；蛋有蛋仁（黃）和蛋白；我們的眼睛也有眼仁和眼白。這就證明牠們前世靈性是由眼睛闖出去的。","en":"Eyes: egg-born animals. Egg-born refers to chickens, birds, and the like that hatch from eggs. Their special trait is very sharp eyesight. For example, an eagle flying high in the sky can still see small animals on the ground. Also, the eggs produced by these animals resemble our eyes very much: an egg has a yolk and egg white; our eyes also have a pupil and the white of the eye. This proves that in their former lives their spiritual nature broke out through the eyes.","vi":"Mắt: loàinoãnsinh. Noãnsinhlànhữngloàinhưgàchimsinhrabằngcáchấptrứng. Đặcđiểmcủachúnglàmắtrấtlinh. Nhưchimưng bay trêncaovẫnnhìnthấy con vậtnhỏdướiđất. Hơnnữa, trứngcủaloàinàyrấtgiốngmắtchúng ta: trứngcólòngđỏvàlòngtrắng; mắtchúng ta cũngcó con ngươivàtròngtrắng. Điềunàychứngminhđờitrướclinhtánhcủachúngđãxôngratừmắt."}},{"id":"p16","color":"#6d4aa2","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【耳】：—　胎生動物。胎生就是指受胎所生的貓狗牛羊之類。它們的特點是耳朵很靈，就如狗，在夜深人靜的時候，外面有什麼風吹草動，它們都很快的覺醒，發出吠聲。此外，這類動物還善聽人言，善解人意。就如馬戲班裡的老虎、獅子、豹等，經過訓獸師的訓練後，叫它們表演什麼就表演什麼。這就證明牠們前世靈性是由耳朵闖出去，才有這樣的特點。","en":"Ears: womb-born animals. Womb-born refers to cats, dogs, cattle, sheep, and the like born from pregnancy. Their special trait is keen hearing. Like dogs, when the night is deep and all is quiet, if there is any slight movement outside, they quickly wake and bark. In addition, these animals are good at listening to human words and understanding human intentions. For example, tigers, lions, leopards, and others in a circus, after being trained by animal trainers, perform whatever they are told to perform. This proves that in their former lives their spiritual nature broke out through the ears, giving them such traits.","vi":"Tai: loàithaisinh. Thai sinhlànhữngloàinhưmèo, chó, trâu, bò, dê, cừusinhratừbàothai.Đặcđiểmcủachúnglà tai rấtlinh. Nhưchó, khiđêmkhuyayêntĩnh, bênngoàicóchútgióthổicỏđộng, chúngliềntỉnhdậyvàsủa. Ngoàira, loàinàycònbiếtnghelờingười, hiểu ý người. Nhưhổ, sưtử, báotronggánhxiếc, saukhiđượcngườihuấnluyệnthúdạydỗ, bảobiểudiễngìthìbiểudiễnnấy. Điềunàychứngminhđờitrướclinhtánhcủachúngxôngratừ tai nênmớicóđặcđiểmnhưvậy."}},{"id":"p17","color":"#8a6a1f","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【鼻】：—　化生動物。化生是指螞蟻、蒼蠅、蚊子之類。","en":"Nose: transformation-born animals. Transformation-born refers to ants, flies, mosquitoes, and the like.","vi":"Mũi: loàihóasinh. Hóasinhlànhữngloàinhưkiến, ruồi, muỗi."}},{"id":"p18","color":"#4f6f52","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"牠們的特點是嗅覺非常靈敏，就如螞蟻，要是我們掉一些糖果在地上，過不久，就有很多螞蟻圍在糖果的周圍，而且在骯髒的地方，到處都是蟑螂、蒼蠅………。這些動物都是用牠們靈敏的嗅覺來找尋食物，這也證明瞭它們前世靈性是由鼻子闖出去的。","en":"Their special trait is a very keen sense of smell. For example, if we drop some candy on the ground, before long many ants will gather around it. In dirty places, cockroaches and flies are everywhere. These animals all use their sensitive sense of smell to find food. This also proves that in their former lives their spiritual nature broke out through the nose.","vi":"Đặcđiểmcủachúnglàkhứugiácrấtlinhmẫn. Nhưkiến, nếuchúng ta làmrơivàiviênkẹoxuốngđất, khônglâusausẽcónhiềukiếnvâyquanhkẹo; hơnnữaởnhữngnơidơbẩnthìđâuđâucũngcógián, ruồi... Nhữngloàivậtnàyđềudùngkhứugiácnhạybénđểtìmthứcăn. Điềunàycũngchứngminhđờitrướclinhtánhcủachúngđãxôngratừmũi."}},{"id":"p19","color":"#244f7a","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【口】：—　濕生動物。濕生就是魚、蝦等水族之類。 牠們的特點就是口很靈。這類動物不能離開水太久，就有如我們的口，自生以來都是濕濕的，若是乾燥的話，就是身體出了毛病。","en":"Mouth: moisture-born animals. Moisture-born refers to aquatic creatures such as fish and shrimp. Their special trait is that the mouth is very sensitive. These animals cannot leave water for too long, just as our mouths have been moist since birth; if the mouth becomes dry, it means something is wrong with the body.","vi":"Miệng: loàithấpsinh. Thấpsinhlàcácloàithủytộcnhưcá, tôm. Đặcđiểmcủachúnglàmiệngrấtlinh. Loàinàykhôngthểrờinướcquálâu, cũngnhưmiệngchúng ta từkhisinhraluônẩmướt; nếukhôthìthânthểđãcóvấnđề."}},{"id":"p20","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"以上是四生的簡單介紹，接下來還有六道，【神道】、【人道】、【阿修羅道】、【地獄道】、【餓鬼道】和【畜牲道】，因為時間的關係，後學只介紹【人道】和【神道】。","en":"The above is a brief introduction to the four forms of birth. Next there are also the six paths: the path of gods, the human path, the asura path, the hell path, the hungry ghost path, and the animal path. Because of time, I will introduce only the human path and the path of gods.","vi":"Trênđâylàphầngiớithiệuđơngiảnvềtứsinh. Tiếptheocòncólụcđạo: thầnđạo, nhânđạo, a-tu-la đạo, địangụcđạo, ngạquỷđạovàsúcsinhđạo. Vìthờigiancóhạn, hậuhọcchỉgiớithiệunhânđạovàthầnđạo."}},{"id":"p21","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【人道】：—　有些人在世時安份守矩，壞事不敢做，好事多少做一點，可惜沒有求道，去世後靈性就會由肚臍闖出去，進入人道，來世間做人。但是，人也有富貴貧賤，窮通壽天之分，這是照前生所做的功德而定，前生做好，這一世就得好報；前生做惡，這一世就得惡報。這是自古不變的因果律。","en":"Human path: Some people, while alive, behave properly and keep the rules. They dare not do bad things and do some good things, yet unfortunately they have not sought the Way. After death their spiritual nature breaks out through the navel and enters the human path, returning to the world as a human being. But among humans there are differences of wealth and status, poverty and honor, success and hardship, longevity and short life. This is determined according to the merits and deeds of the former life. If one did good in the former life, one receives good results in this life; if one did evil in the former life, one receives evil results in this life. This is the unchanging law of cause and effect from ancient times.","vi":"Nhânđạo: Cóngườikhisống an phậngiữphép, việcxấukhôngdámlàm, việctốtítnhiềucũnglàmmộtchút, đángtiếclàchưacầuĐạo. Sau khi qua đời, linhtánhsẽxôngratừrốn, vàonhânđạo, đờisauđếnthếgianlàmngười. Nhưng con ngườicũngcógiàu sang nghèohèn, hanhthôngbếtắc, thọyểukhácnhau; điềunàycăncứvàocôngđứcđờitrướcđãlàm. Đờitrướclàmtốt, đờinàyđượcquảbáotốt; đờitrướclàmác, đờinàychịuquảbáoxấu. Đâylàluậtnhânquảtừxưakhôngđổi."}},{"id":"p22","color":"#6d4aa2","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【神道】：—　有些人在世時樂善好施，造橋鋪路，又是忠臣、孝子、烈女或節婦，可惜沒有求道，去世後靈性由泥丸宮闖出去（泥丸宮就是小孩剛出世時頭部很軟的地方），直往玉皇大帝那裡領神命，為氣天神。","en":"Path of gods: Some people, while alive, gladly do good and give charity, build bridges and roads, and are loyal officials, filial children, virtuous women, or chaste widows. Unfortunately, they have not sought the Way. After death their spiritual nature breaks out through the Niwan Palace, the soft place on the head of a newborn child, and goes directly to the Jade Emperor to receive a divine mandate, becoming a qi-heaven deity.","vi":"Thầnđạo: Cóngườikhisốngthíchlàmđiềuthiện, bốthí, xâycầuđắpđường, lạilàtrungthần, hiếutử, liệtnữhoặctiếtphụ, đángtiếclàchưacầuĐạo. Sau khi qua đời, linhtánhxôngratừNê Hoàn Cung, tứcchỗmềmtrênđầutrẻvừasinh, đithẳngđến Ngọc Hoàng ĐạiĐếnhậnthầnmệnh, trởthànhkhíthiênthần."}},{"id":"p23","color":"#8a6a1f","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【氣天神】：—　大伯公、城隍爺、媽祖………等，他們最高的期限是五百年，這就要看他在世時所做的功德而定。如果期限一到，就要將神命交還給玉皇大帝，再來世間做人。","en":"Qi-heaven deities include Tua Pek Kong, the City God, Mazu, and others. Their maximum term is five hundred years, depending on the merit they performed while alive. When the term arrives, they must return the divine mandate to the Jade Emperor and come again to the world as human beings.","vi":"KhíthiênthầngồmĐại Bá Công, Thành Hoàng Gia, Mazu... Thờihạncaonhấtcủahọlànămtrămnăm, tùytheocôngđứchọđãlàmkhicònsống. Nếuhếtthờihạn, phảitrảthầnmệnhlạicho Ngọc Hoàng ĐạiĐếrồitrởlạithếgianlàmngười."}},{"id":"p24","color":"#4f6f52","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"另外四道等以後我們再出來共同研究。以上就是四生六道的簡單說明。今天在座的諸位前賢已經受到有天命的明師點開正陽法門，等到百歲年老，咱們的本性可以從正陽法門出去，直接到無極理天，跳脫輪廻之苦。這就是剛跟大家說恭喜的原因。","en":"As for the other four paths, we will come out later to study them together. The above is a brief explanation of the four forms of birth and six paths. Today, all virtuous seniors present have already received the opening of the True Yang Dharma Gate by an enlightened master with Heaven\u0027s mandate. When we reach old age, our original nature can leave through the True Yang Dharma Gate and go directly to the Infinite Heaven of Principle, escaping the suffering of reincarnation. This is the reason I congratulated everyone earlier.","vi":"Cònbốnđạo kia, saunàychúng ta sẽcùngrahọchỏinghiêncứu. Trênđâylàphầngiảithíchđơngiảnvềtứsinhlụcđạo. Hôm nay cácvịtiềnhiềnđangngồiđâyđãđượcminhsưcóthiênmệnhchỉmở Chánh Dương Pháp Môn. Khi trămtuổigiàyếu, bảntánhcủachúng ta cóthểrakhỏi Chánh Dương Pháp Môn, trựctiếpđếnVôCực Lý Thiên, thoátkhỏikhổluânhồi. Đâychínhlàlý do vừarồichúcmừngmọingười."}},{"id":"p25","color":"#244f7a","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"既然說我們的本性居住在此，有什麼証明呢？現在後學就借歷代聖佛們在經典或詩句上所留下來的記載來與大家共同研究。","en":"Since it is said that our original nature resides here, what proof is there? Now I will borrow records left by sages and Buddhas of past generations in scriptures or poems to study together with everyone.","vi":"Đãnóibảntánhcủachúng ta cưtrúởđây, cóchứngcứgì? Nay hậuhọcsẽmượnnhữngghichépmàcác Thánh Phậtđờitrướcđểlạitrongkinhđiểnhoặcthơcâuđểcùngmọingườinghiêncứu."}},{"id":"p26","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"釋迦佛祖曰：『佛講經典三千卷　正法眼藏未明言 末世有緣得此法　便是西方不老仙』","en":"Shakyamuni Buddha said: \"The Buddha preached three thousand scrolls of scripture; the treasury of the true Dharma eye was not plainly spoken. In the final age, those with affinity obtain this Dharma; they are then ageless immortals of the West.\"","vi":"PhậtTổ Thích Ca nói: “Phậtgiảngkinhđiểnbangànquyển, Chánh phápnhãntạngchưanóirõ. Đờimạtthếngườihữuduyênđượcphápnày, liềnlàtiênbấtlãonơi Tây phương.”"}},{"id":"p27","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"佛在世間講經說法49年，所講經典無數卷，三千卷只是代表一個滿數，表示很多，佛講很多的經典，但是正法（正陽法門【玄關】）就藏在我們眼前，卻未明白的說出來，只是用暗示的，要等到末世（三期未劫）的時候，跟佛有緣便能得道，得道後，誠心保守、實心修行，便是西方的不老神仙。","en":"The Buddha preached scriptures and taught the Dharma in the world for forty-nine years. He taught countless scrolls of scripture; \"three thousand scrolls\" simply represents a full number, meaning many. The Buddha taught many scriptures, but the true Dharma, the True Yang Dharma Gate, the Mystic Portal, is hidden before our eyes and was not plainly spoken, only hinted at. One must wait until the final age, the final calamity of the three periods; those with affinity with the Buddha can obtain the Way. After obtaining the Way, if they sincerely preserve it and truly cultivate, they become ageless immortals of the West.","vi":"Phậtởthếgiangiảngkinhthuyếtpháp 49 năm, kinhđiểnđãgiảngvôsốquyển; bangànquyểnchỉlà con sốtròn, biểuthịrấtnhiều. Phậtgiảngrấtnhiềukinhđiển, nhưngchánhpháp, tức Chánh Dương Pháp Môn, Huyền Quan, lạiẩnngaytrướcmắtchúng ta màchưanóirõ, chỉdùngámchỉ. Phảichờđếnđờimạtthế, lúc tam kỳmạtkiếp, ngườicóduyênvớiPhậtmớicóthểđắcĐạo. Sau khiđắcĐạo, thànhtâmbảothủ, thậtlòngtuhành, liềnlàthầntiênbấtlãonơi Tây phương."}},{"id":"p28","color":"#6d4aa2","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"老子曰：「谷神不死，藏玄牝。」","en":"Laozi said: \"The valley spirit does not die; it is hidden in the mysterious female.\"","vi":"LãoTửnói: “Cốc thầnbấttử, tànghuyềntẫn.”"}},{"id":"p29","color":"#8a6a1f","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"子曰：「三人行，必有吾師？」","en":"The Master said: \"When three people walk together, there must be one who can be my teacher.\"","vi":"Phu Tửnói: “Ba ngườicùngđi, ắtcóngườilàthầy ta.”"}},{"id":"p30","color":"#4f6f52","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"世俗還有五官之說，【眼】監察官，【耳朶】探聽官，【鼻子】審辨官，【口】　出納官，【眉毛】保壽官，但是自古以來，官者竅也，竅即是有孔洞的地方，但是眉毛無孔無洞，第五官應該是指玄關，也是我們的〝主宰官〞為何叫做主宰官？因為玄關主宰我們的舉止行動。","en":"In common speech there is also the saying of the five officials: eyes as the observing official, ears as the listening official, nose as the discerning official, mouth as the receiving and issuing official, and eyebrows as the life-protecting official. But from ancient times, an official also means an opening, and an opening is a place with a hole. The eyebrows have no hole or opening, so the fifth official should refer to the Mystic Portal. It is also our \"sovereign official.\" Why is it called the sovereign official? Because the Mystic Portal governs our movements and actions.","vi":"Trong dângiancòncóthuyếtngũquan: mắtlàgiámsátquan, tai làthámthínhquan, mũilàthẩmbiệnquan, miệnglàxuấtnạpquan, lôngmàylàbảothọquan. Nhưngtừxưa, “quan” cũnglà “khiếu”, khiếulànơicólỗthông. Lôngmàykhôngcólỗ, khôngcóđộng, nênquanthứnămphảilàchỉHuyền Quan, cũnglà “chủtểquan” củachúng ta. Vìsaogọilàchủtểquan? VìHuyền Quan làmchủcửchỉhànhđộngcủachúng ta."}},{"id":"p31","color":"#244f7a","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"聖人云：「性在人在，性去人亡。」","en":"The sage said: \"When the nature remains, the person remains; when the nature leaves, the person dies.\"","vi":"Thánh nhânnói: “Tánhcònthìngườicòn, tánhđithìngườimất.”"}},{"id":"p32","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"鐵證：一個有求道的人，若在世時，沒有毀謗道，安份守己，百歲年老，去世之後，身體是軟的。（一般人是硬的）而且膚色會很好看。","en":"Strong proof: a person who has sought the Way, if while alive they did not slander the Way and lived properly, then after reaching old age and passing away, the body will be soft, whereas ordinary people are stiff, and the complexion will look good.","vi":"Chứngcứchắcchắn: MộtngườiđãcầuĐạo, nếukhisốngkhônghủybángĐạo, anphậngiữmình, đếntrămtuổigiàyếu qua đời, thânthểsẽmềm, trongkhingườithườngthìcứng, vàsắc da cũngsẽrấtđẹp."}},{"id":"p33","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"第二寶　——　【口訣】。　就是剛才點傳師在佛祖面前用口傳給我們，叫我們用心記住的那句話。這口訣上不傳父母，下不傳妻子、兄弟姐妹、親戚朋友，無論對任何人都不可以輕易洩漏。這是天機。這口訣乃是口傳心印，我們千萬不可以、怕忘記而把它記在簿子上或時常在心裡唸，以免洩漏天機。大道總共降世普渡三次，每一次的口訣都不一樣。","en":"The Second Treasure: the oral formula. It is the phrase that the transmitting master just transmitted to us orally before the Buddha and told us to remember with our hearts. This oral formula is not transmitted upward to parents, nor downward to wife, children, siblings, relatives, or friends. It must not be lightly revealed to anyone. This is a heavenly secret. This oral formula is orally transmitted and heart-sealed. We absolutely must not, for fear of forgetting it, write it in a notebook or often recite it in the heart, lest we reveal Heaven\u0027s secret. The Great Way has descended into the world for universal salvation three times in all, and each time the oral formula is different.","vi":"Bảo thứhai: Khẩu Quyết. ĐólàcâumàvịđiểmtruyềnsưvừaởtrướcPhậtTổdùngmiệngtruyềnchochúng ta, bảochúng ta ghinhớbằngtâm. KhẩuQuyếtnàytrênkhôngtruyềncho cha mẹ, dướikhôngtruyềnchovợ con, anhchịem, thânthíchbạnbè; đốivớibấtcứ ai cũngkhôngđượctùytiệntiếtlộ. Đâylàthiêncơ. KhẩuQuyếtnàylàkhẩutruyềntâmấn. Chúng ta tuyệtđốikhôngđượcvìsợquênmàghivàosổhoặcthườngniệmtronglòng, đểtránhtiếtlộthiêncơ. ĐạiĐạotổngcộnggiángthếphổđộbalần, mỗilầnKhẩuQuyếtđềukhácnhau."}},{"id":"p34","color":"#6d4aa2","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【第一次】青陽期，距今有5000年左右，因為應運青陽之青，所以當時的人尚青，以青為貴，以青為主。例如：他們住在山洞、穿樹葉、吃生果等。那時的人，心地善良，做惡少，所以上天只降下九劫，叫做龍漢水劫，水越深就越青，應運青陽之青。這一期上天命令燃燈古佛掌天盤，負責普，應運1500年。在這1500年當中，雖然有水淹崑崙山64年，世界各地洪水泛濫，只要求道得了燃燈古佛所賜的四字真經口訣（無量壽佛），就能平安過這場大水的浩劫。","en":"[The first time] The Green Yang period was around 5,000 years ago. Because it corresponded to the green of Green Yang, people at that time valued green, considered green noble, and took green as central. For example, they lived in mountain caves, wore leaves, ate raw fruit, and so on. People then had kind hearts and did little evil, so Heaven sent down only nine calamities, called the Longhan water calamity. The deeper water is, the greener it appears, corresponding to the green of Green Yang. In this period Heaven ordered Ancient Buddha Dipankara to hold the heavenly mandate and be responsible for universal salvation, responding to the period for 1,500 years. During those 1,500 years, although water flooded Mount Kunlun for 64 years and floods spread throughout the world, as long as one sought the Way and obtained the four-character true-scripture oral formula granted by Ancient Buddha Dipankara, \"Infinite Life Buddha,\" one could pass safely through that great water calamity.","vi":"[Lầnthứnhất] Thời Thanh Dương, cách nay khoảng 5.000 năm. Vìứngvớimàuxanhcủa Thanh Dương, nênngườithờiấychuộngmàuxanh, lấymàuxanhlàmquý, lấymàuxanhlàmchính. Vídụ: họở hang núi, mặclácây, ăntráisống... Khi ấylòngngườithiệnlương, làmácít, nênTrờichỉgiángxuốngchínkiếp, gọilà Long Hán thủykiếp. Nướccàngsâucàngxanh, ứngvớimàuxanhcủa Thanh Dương. ThờikỳnàyTrờilệnhchoNhiênĐăngCổPhậtchưởngthiênbàn, phụtráchphổđộ, ứngvận 1.500 năm. Trong 1.500 nămđó, tuycónướcngậpnúiCônLôn 64 năm, lũlụtkhắpthếgiới, chỉcầncầuĐạovàđượcKhẩuQuyếtchânkinhbốnchữ do NhiênĐăngCổPhật ban, “VôLượngThọ Phật”, thìcóthểbình an vượt qua trậnđạithủykiếpấy."}},{"id":"p35","color":"#8a6a1f","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【第二次】紅陽期。距今有3000年左右，因為應運紅陽之紅，所以當時的人尚紅，以紅為貴，以紅為主。如當時的新娘穿紅禮服，牆壁用紅磚，請帖也用紅帖等……。那時的人做惡比青陽期加倍，所以上天降劫也加倍，總共降下18劫，叫做赤明火劫，火越燒越紅，應運著紅陽之紅。這一期上天命令釋迦牟尼佛掌天盤，應運是3000年。在這3000年當中，雖然有火燒籐甲兵、火燒阿房宮、火燒連環船、火燒連營800裏等等，只要求道，得了釋迦牟尼佛所賜的六字真經（南無阿彌陀佛）就不會被烈火給燒成灰。","en":"[The second time] The Red Yang period was around 3,000 years ago. Because it corresponded to the red of Red Yang, people at that time valued red, considered red noble, and took red as central. For example, brides then wore red ceremonial clothing, walls used red bricks, invitations used red cards, and so on. People then did twice as much evil as in the Green Yang period, so Heaven also sent down twice as many calamities, eighteen in all, called the Chiming fire calamity. The more fire burns, the redder it becomes, corresponding to the red of Red Yang. In this period Heaven ordered Shakyamuni Buddha to hold the heavenly mandate, and the responding period was 3,000 years. During those 3,000 years, although there were events such as the burning of the rattan-armored troops, the burning of Epang Palace, the burning of chained ships, and the burning of camps stretching eight hundred li, as long as one sought the Way and obtained the six-character true scripture granted by Shakyamuni Buddha, \"Namo Amitabha Buddha,\" one would not be burned to ashes by fierce fire.","vi":"[Lầnthứhai] Thời Hồng Dương, cách nay khoảng 3.000 năm. Vìứngvớimàuđỏcủa Hồng Dương, nênngườithờiấychuộngmàuđỏ, lấymàuđỏlàmquý, lấymàuđỏlàmchính. Nhưcôdâuthờiấymặclễphụcđỏ, tườngdùnggạchđỏ, thiệpmờicũngdùngthiệpđỏ... Khi ấyngườilàmácgấpđôithời Thanh Dương, nênTrờigiángkiếpcũnggấpđôi, tổngcộng 18 kiếp, gọilàXích Minh hỏakiếp. Lửacàngcháycàngđỏ, ứngvớimàuđỏcủa Hồng Dương. ThờikỳnàyTrờilệnhchoPhật Thích Ca Mâu Ni chưởngthiênbàn, ứngvận 3.000 năm. Trong 3.000 nămđó, tuycólửathiêuquânđằnggiáp, lửađốtcung A Phòng, lửađốtthuyềnliênhoàn, lửađốtliêndoanhtámtrămdặm..., chỉcầncầuĐạo, đượcchânkinhsáuchữ do Phật Thích Ca Mâu Ni ban, “Nam Mô A Di Đà Phật”, thìsẽkhôngbịlửadữthiêuthànhtro."}},{"id":"p36","color":"#4f6f52","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【第三次】白陽期，因為應運白陽之白，所以現今的人尚白，以白為貴，以白為主。一個很現實的例子就是現今世各地的新娘子都不約而同的穿起白色的禮服，用的是日光燈、墻壁也漆上淺的顏色……，雖然應運白陽，但是現今的人心最險惡，做惡者多，為善者少，所以上天震怒降下9×9=81劫的罡風浩劫，又叫做延康風，風是無色的故屬白，這一期上天命令彌勒祖師掌天盤，應運10800年。","en":"[The third time] The White Yang period corresponds to the white of White Yang, so people today value white, consider white noble, and take white as central. A very practical example is that brides throughout the world today all happen to wear white ceremonial gowns; people use fluorescent lights and paint walls in light colors. Although this corresponds to White Yang, the human heart today is most dangerous and wicked: many do evil and few do good. Therefore Heaven, angered, sends down the great calamity of 9 x 9 = 81 fierce winds, also called the Yankang wind. Wind is colorless and therefore belongs to white. In this period Heaven ordered Patriarch Maitreya to hold the heavenly mandate, responding to the period for 10,800 years.","vi":"[Lầnthứba] Thời Bạch Dương, vìứngvớimàutrắngcủa Bạch Dương, nênngườihiện nay chuộngmàutrắng, lấymàutrắnglàmquý, lấymàutrắnglàmchính. Mộtvídụrấtthựctếlàcôdâukhắpnơitrênthếgiớihiện nay đềukhônghẹnmàcùngmặclễphụctrắng, dùngđènhuỳnhquang, tườngcũngsơnmàunhạt... Tuy ứngvận Bạch Dương, nhưnglòngngườihiện nay hiểmácnhất, ngườilàmácnhiều, ngườilàmthiệnít, nênTrờinổigiậngiángxuốngđạikiếpcươngphong 9 x 9 = 81 kiếp, còngọilàDiên Khang phong. Giókhôngmàunênthuộctrắng. ThờikỳnàyTrờilệnhchoTổSư Di Lặcchưởngthiênbàn, ứngvận 10.800 năm."}},{"id":"p37","color":"#244f7a","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"這風劫有什麼證明呢？在第一次世界大戰中，希特勒的煤氣毒死600萬猶太人，還有美國也在日本的長崎和廣島投下兩顆原子彈，死亡人數達整百萬，而且過後受存留在空氣中的幅射所影響的人也不計其數。這些都是以熱風來攻。現在發明核子彈、中子彈，其威力比原子彈還要強上好幾萬倍，到那時海枯石爛，我們又怎樣躲呢？所以上天慈悲，天道降世，只要求道，得了彌勒祖師所賜的無字真經口訣，再加上誠心修行，就能平安無事。","en":"What proof is there of this wind calamity? In the First World War, Hitler\u0027s gas killed six million Jews, and the United States dropped two atomic bombs on Nagasaki and Hiroshima in Japan, causing deaths numbering in the millions; afterward, countless people were affected by radiation remaining in the air. These are all attacks by hot wind. Now nuclear bombs and neutron bombs have been invented, and their power is tens of thousands of times stronger than atomic bombs. When that time comes and seas dry up and rocks crumble, how can we hide? Therefore Heaven is compassionate and the Heavenly Way descends into the world. As long as one seeks the Way, obtains the wordless true-scripture oral formula granted by Patriarch Maitreya, and sincerely cultivates, one can be safe and unharmed.","vi":"Cóchứngcứgìvềphongkiếpnày? Trong Thếchiếnthứnhất, hơiđộccủa Hitler làmchếtsáutriệungười Do Thái; lạinữa, Mỹthảhaiquảbomnguyêntửxuống Nagasaki và Hiroshima của Nhật Bản, sốngườichếtlênđếnhàngtriệu, hơnnữasauđónhữngngườibịảnhhưởngbởiphóngxạcònlưutrongkhôngkhícũngkhôngđếmxuể. Nhữngđiềunàyđềulàdùnggiónóngđểtấncông. Hiện nay phátminhbomhạtnhân, bom neutron, uylựcmạnhhơnbomnguyêntửhàngvạnlần. Đếnlúcbiểncạnđámòn, chúng ta trốnbằngcáchnào? VìvậyTrờitừ bi, Thiên Đạogiángthế; chỉcầncầuĐạo, đượcKhẩuQuyếtchânkinhvôchữ do TổSư Di Lặc ban, lạithêmthànhtâmtuhành, thìcóthểbình an vôsự."}},{"id":"p38","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"綜合以上水火風，三災八難、36天罡、72地煞，剛好108劫完畢，叫做三期末劫。","en":"Combining the above water, fire, and wind, the three calamities and eight difficulties, the 36 heavenly spirits and 72 earthly fiends, the total is exactly 108 calamities, called the final calamity of the three periods.","vi":"Tổnghợpnước, lửa, gióởtrên, tam tai bátnạn, 36 thiêncang, 72 địasát, vừađúng 108 kiếp, gọilà tam kỳmạtkiếp."}},{"id":"p39","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"這108劫有什麼證明呢？在佛教，若有歸依佛的就有一串佛珠總共108粒，其中有三粒比較大或是顏色不同，這就是代表青、紅、白三期。以上是第二寶的簡單介紹。","en":"What proof is there of these 108 calamities? In Buddhism, those who take refuge in the Buddha have a string of prayer beads totaling 108 beads, among which three beads are larger or different in color. These represent the three periods: Green, Red, and White. The above is a brief introduction to the Second Treasure.","vi":"Cóchứngcứgìvề 108 kiếpnày? Trong Phậtgiáo, ngườiquy y PhậtcómộtchuỗiPhậtchâutổngcộng 108 hạt, trongđócóbahạtlớnhơnhoặcmàusắckhácnhau. Điềunàyđạidiệnchobakỳ Thanh, Hồng, Bạch. Trênđâylàphầngiớithiệuđơngiảnvề Bảo thứhai."}},{"id":"p40","color":"#6d4aa2","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"第三寶　——　【合同】。","en":"The Third Treasure: the Hand Seal.","vi":"Bảo thứba: HợpĐồng."}},{"id":"p41","color":"#8a6a1f","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"就是剛才點傳師在佛祖面前，叫我們右手在內，左手在外，抱在胸前，不可漏風，這就是這一期的合同。每一期的合同都不樣。","en":"It is what the transmitting master just instructed before the Buddha: the right hand inside, the left hand outside, held before the chest, without letting air leak through. This is the Hand Seal of this period. The Hand Seal of each period is different.","vi":"ĐólàđiềuvịđiểmtruyềnsưvừaởtrướcPhậtTổbảochúng ta làm: tayphảiởtrong, taytráiởngoài, ômtrướcngực, khôngđểlọtgió. ĐâychínhlàHợpĐồngcủathờikỳnày. HợpĐồngcủamỗithờikỳđềukhácnhau."}},{"id":"p42","color":"#4f6f52","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【第一次】青陽期的合同叫做『蓮葉合同』，蓮葉是青色的，應運著青陽之青，其手勢是右手舉掌，左手按胸，所以又叫做舉掌合同，裏面包含了9劫（節）。","en":"[The first time] The Hand Seal of the Green Yang period was called the Lotus-Leaf Hand Seal. Lotus leaves are green, corresponding to the green of Green Yang. The gesture was to raise the right palm and press the left hand to the chest, so it was also called the raised-palm Hand Seal. It contained nine calamities, or sections.","vi":"[Lầnthứnhất] HợpĐồngthời Thanh Dương gọilà “Liên Diệp HợpĐồng”. Lásenmàuxanh, ứngvớimàuxanhcủa Thanh Dương. Thủthếlàtayphảigiơchưởng, taytráiđặttrướcngực, nêncòngọilàCửChưởngHợpĐồng. Bêntrong bao hàm 9 kiếp, tức 9 tiết."}},{"id":"p43","color":"#244f7a","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"若要避開當時的水劫必須三寶齊用，第一寶（玄關），在這個地方永遠不變，第二寶（無量壽佛），再配合第三寶（蓮葉合同）這樣（無量壽佛）（示範）就能脫劫避難。","en":"To avoid the water calamity of that time, the Three Treasures had to be used together: the First Treasure, the Mystic Portal, which is forever unchanged at this place; the Second Treasure, \"Infinite Life Buddha\"; and then together with the Third Treasure, the Lotus-Leaf Hand Seal. In this way, with \"Infinite Life Buddha\" and the demonstration, one could escape calamity and avoid disaster.","vi":"Muốntránhthủykiếplúcấy, phảidùngđủ Tam Bảo: Bảo thứnhất, Huyền Quan, nơinàyvĩnhviễnkhôngđổi; Bảo thứhai, “VôLượngThọ Phật”; lạiphốihợpvới Bảo thứba, Liên Diệp HợpĐồng. Nhưvậy, “VôLượngThọ Phật” vàlàmmẫu, liềncóthểthoátkiếptránhnạn."}},{"id":"p44","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【第二次】紅陽期的合同叫做『蓮花合同』，蓮花是粉紅色的，應運著紅陽之紅，蓮花未開時是這樣子的，故又叫合掌合同，裏面包含了18。","en":"[The second time] The Hand Seal of the Red Yang period was called the Lotus-Flower Hand Seal. The lotus flower is pink, corresponding to the red of Red Yang. Before the lotus flower opens, it looks like this, so it is also called the palms-joined Hand Seal. It contained eighteen.","vi":"[Lầnthứhai] HợpĐồngthời Hồng Dương gọilà “Liên Hoa HợpĐồng”. Hoa senmàuhồng, ứngvớimàuđỏcủa Hồng Dương. Khi hoasenchưanởthìnhưthếnày, nêncòngọilàHợpChưởngHợpĐồng. Bêntrong bao hàm 18."}},{"id":"p45","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"當時也必須三寶齊用（南無阿彌陀佛）（示範）才能避開火劫。","en":"At that time, one also had to use the Three Treasures together, \"Namo Amitabha Buddha\" with the demonstration, in order to avoid the fire calamity.","vi":"Lúcấycũngphảidùngđủ Tam Bảo, “Nam Mô A Di Đà Phật” vàlàmmẫu, mớicóthểtránhhỏakiếp."}},{"id":"p46","color":"#6d4aa2","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"既然說三寶不可以洩漏，為什麼在電影中還可以聽到「無量壽佛」和「南無阿彌陀佛」，而且有些寺廟還寫了「南無阿彌陀佛」六個大字？","en":"Since it is said that the Three Treasures must not be revealed, why can we still hear \"Infinite Life Buddha\" and \"Namo Amitabha Buddha\" in movies, and why do some temples even write the six large characters \"Namo Amitabha Buddha\"?","vi":"Đãnói Tam Bảo khôngđượctiếtlộ, vìsaotrongphimcònngheđược “VôLượngThọ Phật” và “Nam Mô A Di Đà Phật”, hơnnữacómộtsốchùacònviếtsáuchữlớn “Nam Mô A Di ĐàPhật”?"}},{"id":"p47","color":"#8a6a1f","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"這是因為前兩期的應運期已過，故其口訣與合同已失去效用，現今已轉入白陽期。","en":"This is because the responding periods of the first two eras have already passed, so their oral formulas and Hand Seals have lost their effect. The present has already turned into the White Yang period.","vi":"Đólàvìthờiứngvậncủahaikỳtrướcđã qua, nênKhẩuQuyếtvàHợpĐồngcủacáckỳấyđãmấthiệudụng; hiện nay đãchuyển sang thời Bạch Dương."}},{"id":"p48","color":"#4f6f52","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【第三次】白陽期的合同叫『蓮藕合同』，蓮藕切開來是白色的，應運著白陽之白，蓮藕是一節一節的，就像我們所抱的合同，裏面包含9×9=81動。這合同又叫子亥合同，是根據十二地支而來的。","en":"[The third time] The Hand Seal of the White Yang period is called the Lotus-Root Hand Seal. When lotus root is cut open, it is white, corresponding to the white of White Yang. Lotus root is divided into sections, like the Hand Seal we hold, and within it are 9 x 9 = 81 movements. This Hand Seal is also called the Zi-Hai Hand Seal, based on the twelve earthly branches.","vi":"[Lầnthứba] HợpĐồngthời Bạch Dương gọilà “Liên NgẫuHợpĐồng”. Cắtcủsenrathìbêntrongmàutrắng, ứngvớimàutrắngcủa Bạch Dương. Củsentừngđốttừngđốt, giốngnhưHợpĐồngmàchúng ta ôm, bêntrong bao hàm 9 x 9 = 81 động. HợpĐồngnàycòngọilàTý-Hợi HợpĐồng, căncứtheomườihaiđịa chi màcó."}},{"id":"p49","color":"#244f7a","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"子醜寅卵辰已午未申酉戌亥","en":"Zi, Chou, Yin, Mao, Chen, Si, Wu, Wei, Shen, You, Xu, Hai","vi":"Tý, Sửu, Dần, Mão, Thìn, Tỵ, Ngọ, Mùi, Thân, Dậu, Tuất, Hợi"}},{"id":"p50","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"一會有10800年，12會就有129600年。我們所抱的就是天地的總歲數。子和亥合起來成了一個孩字。這子亥合同有什麼證明嗎？","en":"One period has 10,800 years, so twelve periods have 129,600 years. What we hold is the total number of years of Heaven and Earth. When Zi and Hai are joined, they form the character hai, meaning child. What proof is there of this Zi-Hai Hand Seal?","vi":"Mộthộicó 10.800 năm, 12 hộilà 129.600 năm. Điềuchúng ta ômchínhlàtổngsốtuổicủatrờiđất. Tývà Hợi hợplạithànhchữ “hài”, nghĩalàtrẻ con. Tý-Hợi HợpĐồngnàycóchứngcứgìkhông?"}},{"id":"p51","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"在世俗中，我們時常聽說「送子觀音」，一般人相信若是婚後沒有孩子，去求送子觀音，便可得到一個孩子。其實觀世音暗示我們在這時候必須求道，抱著子亥合同才能脫劫避難。","en":"In common life, we often hear of \"Child-Giving Guanyin.\" Ordinary people believe that if after marriage they have no child, they can pray to Child-Giving Guanyin and obtain a child. In fact, Guanyin is hinting that at this time we must seek the Way and hold the Zi-Hai Hand Seal in order to escape calamity and avoid disaster.","vi":"Trong dângian, chúng ta thườngnghenói “TốngTử Quan Âm”. Ngườibìnhthường tin rằngnếusaukhikếthônmàkhôngcó con, đicầuTốngTử Quan Âmthìcóthểđượcmộtđứa con. Thậtra Quán ThếÂmámchỉrằngvàothờinàychúng ta phảicầuĐạo, ômTý-Hợi HợpĐồngmớicóthểthoátkiếptránhnạn."}},{"id":"p52","color":"#6d4aa2","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"論語孔聖人說：「父母之年，不可不知也，一則以喜，一則以懼。」","en":"In the Analects, Confucius said: \"The age of one\u0027s parents must not be unknown; on the one hand, it is a cause for joy, and on the other, for fear.\"","vi":"Trong Luận Ngữ, Khổng Thánh Nhânnói: “Tuổicủa cha mẹkhôngthểkhôngbiết; mộtmặtlấyđólàmvui, mộtmặtlấyđólàm lo.”"}},{"id":"p53","color":"#8a6a1f","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"字面上的意思是說父母的年齡，我們做子女的不可以不知，知道了，一方面高興能為雙親作壽，但人並非長生不老，有一天父母也會離開我們，這是恐懼的一面。","en":"The literal meaning is that, as children, we must know our parents\u0027 ages. Knowing them, on one hand we are happy because we can celebrate their birthdays; but people are not immortal, and one day our parents will also leave us. This is the fearful side.","vi":"Nghĩa trênmặtchữlàtuổicủa cha mẹ, làm con khôngthểkhôngbiết. Biếtrồi, mộtmặtvuivìcóthểmừngthọ song thân; nhưng con ngườikhôngtrườngsinhbấtlão, mộtngàynàođó cha mẹcũngsẽrờichúng ta, đólàmặtđáng lo."}},{"id":"p54","color":"#4f6f52","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"若以易經解，父屬乾，乾屬天，母屬坤，坤屬地，也就是說：","en":"If explained through the Book of Changes, father belongs to Qian, and Qian belongs to Heaven; mother belongs to Kun, and Kun belongs to Earth. That is to say:","vi":"Nếugiảitheo Kinh Dịch, cha thuộcCàn, CànthuộcTrời; mẹthuộcKhôn, KhônthuộcĐất. Cũngtứclànói:"}},{"id":"p55","color":"#244f7a","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"「天地之年，不可不知也」","en":"\"The age of Heaven and Earth must not be unknown.\"","vi":"“Tuổicủatrờiđấtkhôngthểkhôngbiết.”"}},{"id":"p56","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"（天時）子會開天，醜會闢地，寅會生人，現在天時已經走到午未交替的時候，將會有一場小混沌，叫做7×7=49災。49日天昏地暗，日月無光，伸手不見五指，這時，上天要來個大清算，地獄門大開，山妖水怪齊放，有冤報冤，有仇報仇，到處鬼哭神嚎，遍地荒涼，有屋無人住，有路無人走。怎樣才能避開這場災難呢？","en":"[Heavenly timing] In the Zi period, Heaven opens; in the Chou period, Earth is formed; in the Yin period, humans are born. Now heavenly timing has reached the transition between Wu and Wei, and there will be a small chaos called 7 x 7 = 49 disasters. For forty-nine days the sky will be dark and the earth dim, the sun and moon without light, and one will not be able to see one\u0027s fingers before one\u0027s face. At that time Heaven will carry out a great reckoning; the gates of hell will open wide, mountain spirits and water monsters will all be released, grievances will answer grievances, revenge will answer enmity, ghosts will wail and spirits howl everywhere, the land will be desolate, houses will have no one living in them, and roads will have no one walking on them. How can one avoid this disaster?","vi":"[Thiên thời] HộiTýkhaithiên, hội Sửu lậpđịa, hội Dần sinhngười. Nay thiênthờiđãđiđếnlúcgiaothay Ngọ-Mùi, sẽcómộttrậntiểuhỗnđộn, gọilà 7 x 7 = 49 tai. Bốnmươichínngàytrờiđấttốităm, nhậtnguyệtkhôngánhsáng, đưataykhôngthấynămngón. LúcấyTrờisẽcómộtcuộcđạithanhtoán, cửađịangụcmởrộng, yêunúiquáinướcđềuđượcthảra, cóoanbáooan, cóthùbáothù, khắpnơiquỷkhócthầngào, đấtđaihoangvắng, cónhàkhôngngườiở, cóđườngkhôngngườiđi. Làmsaomớicóthểtránhtrận tai nạnnày?"}},{"id":"p57","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"唯有求道，抱著子亥合同才能脫災難。這49災有什麼證明呢？","en":"Only by seeking the Way and holding the Zi-Hai Hand Seal can one escape disaster. What proof is there of these 49 disasters?","vi":"ChỉcócầuĐạo, ômTý-Hợi HợpĐồngmớicóthểthoát tai nạn. 49 tai nàycóchứngcứgì?"}},{"id":"p58","color":"#6d4aa2","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"我們都知道一個星期有7天：禮拜一、禮拜二、禮拜三、禮拜四、禮拜五、禮拜六，卻沒有禮拜七，而叫做禮拜天。在這一天，信徒就去教堂做禮拜。禮拜天　=　以禮來拜天，這也在暗示我們要求道，學了周公大禮來拜天。","en":"We all know that a week has seven days: Monday, Tuesday, Wednesday, Thursday, Friday, and Saturday, but there is no \"seventh worship day\"; it is called Sunday, or \"the day of worshiping Heaven.\" On this day believers go to church to worship. Sunday means using ritual to worship Heaven. This is also hinting that we should seek the Way and learn the great rites of the Duke of Zhou to worship Heaven.","vi":"Chúng ta đềubiếtmộttuầncóbảyngày: thứhai, thứba, thứtư, thứnăm, thứsáu, thứbảy, nhưngkhôngcó “lễbáithứbảy”, màgọilàlễbáithiên. Ngàyấytínđồđếnnhàthờlàmlễ. Lễbáithiênnghĩalàdùnglễđểbái Trời. Điềunàycũngámchỉchúng ta phảicầuĐạo, họcđạilễcủa Chu Công đểbái Trời."}},{"id":"p59","color":"#8a6a1f","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"每逢農曆七月半叫做中元節（一月、二月、三月、四月、五月、六月、七月和八月之間）信徒為了慶祝中元普渡便殺雞、鴨、豬……。來祭拜陰間的好兄弟。其實，普渡乃是普遍救度的意思。現在道劫並降，喜是歡喜能得道脫劫，懼是恐懼還有很多親友還未得道，不能脫劫，既然如此，我們得道以後，就趕快渡他們來求道。","en":"Every lunar seventh month, the middle of the month is called the Zhongyuan Festival, between the seventh and eighth months. To celebrate Zhongyuan universal salvation, believers kill chickens, ducks, pigs, and so on to worship the good brothers of the netherworld. In fact, universal salvation means saving all broadly. Now the Way and calamity descend together: joy is being glad that we can obtain the Way and escape calamity; fear is being afraid that many relatives and friends have not yet obtained the Way and cannot escape calamity. Since this is so, after we obtain the Way, we should quickly guide them to come seek the Way.","vi":"Mỗikhiđếnrằmthángbảyâmlịchgọilà Trung Nguyên Tiết, nằmgiữathángbảyvàthángtám. Tínđồvìmừng Trung Nguyên phổđộmàgiếtgà, vịt, heo... đểcúngbáicác “anhemtốt” nơiâmgian. Thậtra, phổđộnghĩalàcứuđộrộngkhắp. Hiện nay Đạovàkiếpcùnggiáng; vuilàvuivìcóthểđắcĐạothoátkiếp, lo là lo vìcònrấtnhiềuthânhữuchưađắcĐạo, khôngthểthoátkiếp. Đãnhưvậy, saukhichúng ta đắcĐạo, hãymauđộhọđếncầuĐạo."}},{"id":"p60","color":"#4f6f52","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"此一劫過後有10800年的大同世界，申會＝人滅，酉會＝地滅，戌會＝天滅，亥會＝還會有一個大混沌。經過一萬零八百年，再由子會＝開天，醜會＝關地，寅會＝生人，這便是天地的一個元會。","en":"After this calamity there will be a world of Great Unity lasting 10,800 years. In the Shen period, humans perish; in the You period, Earth perishes; in the Xu period, Heaven perishes; in the Hai period, there will again be a great chaos. After 10,800 years, the cycle begins again: Zi period opens Heaven, Chou period closes Earth, Yin period gives birth to humans. This is one cosmic cycle of Heaven and Earth.","vi":"Sau kiếpnàysẽcóthếgiớiĐạiĐồng 10.800 năm. Hội Thân làngườidiệt, hội Dậu làđấtdiệt, hội Tuất làtrờidiệt, hội Hợi lạicómộtđạihỗnđộn. Qua mộtvạnlẻtámtrămnăm, lạitừhộiTýkhaithiên, hội Sửu quanđịa, hội Dần sinhngười. Đâylàmộtnguyênhộicủatrờiđất."}},{"id":"p61","color":"#244f7a","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"此時若不是天道大開普渡，我們也無法求道。有一點說明就是自古以來，真道必有真考，所以佛曰：","en":"If at this time the Heavenly Way were not greatly opened for universal salvation, we would also be unable to seek the Way. One point to explain is that from ancient times, the true Way must have true tests. Therefore the Buddha said:","vi":"Nếulúcnàykhôngphải Thiên Đạođạikhaiphổđộ, chúng ta cũngkhôngthểcầuĐạo. Cómộtđiểmcầnnóirõlàtừxưađến nay, ChânĐạoắtcóchânkhảo, nênPhậtnói:"}},{"id":"p62","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"『真道真考古難移，有緣無緣試根基。』","en":"\"True Way, true tests: from ancient times this is hard to change. Whether there is affinity or not, the root foundation is tested.\"","vi":"“ChânĐạochânkhảoxưakhóđổi, hữuduyênvôduyênthửcăncơ.”"}},{"id":"p63","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"是應時應運之考（考人們最喜歡的東西）。","en":"It is a test corresponding to the time and the cycle, testing what people love most.","vi":"Đólàkhảonghiệmứngthờiứngvận, khảođiều con ngườiyêuthíchnhất."}},{"id":"p64","color":"#6d4aa2","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"在【第一期】青陽期，是原始時代，冬天寒冷，人們喝酒禦寒，故人人嗜酒如命，故上天借考便是戒酒，不怕寒冷凍死者，而且要在深山古洞中苦修苦行才有道可求。","en":"In the first period, the Green Yang period, it was a primitive age. Winters were cold, and people drank alcohol to resist the cold, so everyone loved alcohol as much as life. Therefore Heaven\u0027s borrowed test was abstaining from alcohol, not fearing freezing to death in the cold, and practicing bitter cultivation in deep mountains and ancient caves before there was a Way to seek.","vi":"Ởthờikỳthứnhất, thời Thanh Dương, làthờinguyênthủy. Mùađônglạnh, người ta uốngrượuđểchốngrét, nên ai cũngmêrượunhưmạngsống. VìvậyTrờimượnkhảolàgiớirượu, khôngsợrétlạnhđếnchết, lạiphảikhổtukhổhạnhtrongnúisâuđộngcổmớicóĐạođểcầu."}},{"id":"p65","color":"#8a6a1f","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"【第二期】紅陽期，文明漸漸進步，男女均有愛美好色之心，故聖人才定男女授受不親之禮以正人倫。故上天借考便是戒色，要是有志修道者，必須拋妻離子出家，終生離色（男不娶，女不嫁）才可得道。","en":"[The second period] In the Red Yang period, civilization gradually progressed, and both men and women had hearts that loved beauty and sensual desire. Therefore sages established the ritual propriety that men and women should not touch when giving and receiving, in order to correct human relations. Therefore Heaven\u0027s borrowed test was abstaining from sexual desire. If one aspired to cultivate the Way, one had to leave wife and children and leave home, separating from sexual desire for life, with men not marrying and women not marrying, before one could obtain the Way.","vi":"[Thờikỳthứhai] Thời Hồng Dương, vănminhdầntiếnbộ, namnữđềucótâmyêucáiđẹpvà ham sắc, nên Thánh nhânmớiđịnhlễnamnữthụthụbấtthânđểchỉnhđốnnhânluân. VìvậyTrờimượnkhảolàgiớisắc. NgườicóchítuĐạophảibỏvợlìa con, xuấtgia, suốtđờilìasắc, namkhôngcưới, nữkhônggả, mớicóthểđắcĐạo."}},{"id":"p66","color":"#4f6f52","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"現在是【第三期】，上天借考總是考人最重視的東西，現今社會人人為財為利，所以俗語雲：「賠錢生意沒人做，殺頭生意有人做」。故上天借考，是考咱們求道人是否有拾財培德的誠心，所以每個求道人必須交十元功德費，大人小孩都一樣。這是替大家買香，花，水果，表示咱對仙佛的敬意，若有剩餘的錢就用來印善書，代咱們作功德。而且一生只交一次，以後無論來幾次，都不必再交。若今天不方便沒關係，以後再交，假如引保師先替我們交，我們要趕快拿還給他，因為功德費是上天借考，必須自己出才能通過上天考財這一關。所做功德也是自己得，這點請大家瞭解。","en":"Now it is the third period. Heaven\u0027s borrowed test always tests what people value most. In today\u0027s society everyone works for wealth and profit, so the common saying goes: \"No one does business that loses money, but people will do business that risks beheading.\" Therefore Heaven\u0027s borrowed test is to test whether we seekers of the Way have the sincerity to give up wealth and cultivate virtue. So every seeker of the Way must pay a ten-dollar merit fee, adults and children alike. This is to buy incense, flowers, and fruit for everyone, expressing our respect to immortals and Buddhas. If money remains, it is used to print moral books, doing merit on our behalf. Moreover, it is paid only once in a lifetime; no matter how many times one comes later, there is no need to pay again. If it is inconvenient today, it does not matter; one may pay later. If the introducer and guarantor first pay for us, we must quickly return it to them, because the merit fee is Heaven\u0027s borrowed test; one must pay it oneself to pass Heaven\u0027s test of wealth. The merit done is also received by oneself. Please understand this point.","vi":"Hiện nay làthờikỳthứba. Trờimượnkhảoluônkhảođiều con ngườicoitrọngnhất. Xãhộihiện nay ai aicũngvìtiềntàilợiích, nêntụcngữnói: “Buônbánlỗvốnkhông ai làm, buônbánmấtđầucóngườilàm.” VìvậyTrờimượnkhảolàkhảochúng ta, nhữngngườicầuĐạo, cóthànhtâmxảtàibồiđức hay không. Cho nênmỗingườicầuĐạophảiđóngmườiđồngtiềncôngđức, ngườilớntrẻnhỏđềunhưnhau. Đâylàđểmuahương, hoa, tráicâychomọingười, biểuthịlòngkính ý củachúng ta đốivới Tiên Phật. Nếucòndưtiềnthìdùngđể in sáchthiện, thaychúng ta làmcôngđức. Hơnnữacảđờichỉđóngmộtlần, saunàydùđến bao nhiêulầncũngkhôngcầnđóngnữa. Nếuhôm nay khôngtiệnthìkhôngsao, saunàyđóng; nếudẫnbảosưđãđóngthay, chúng ta phảimautrảlại, vìtiềncôngđứclàTrờimượnkhảo, phảitựmìnhbỏramới qua đượccửakhảotàicủa Trời. Công đứcđãlàmcũnglàtựmìnhđược. Điểmnàyxinmọingườihiểurõ."}},{"id":"p67","color":"#244f7a","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"而現在修道，不用出家，配合酒色財，還缺一個氣、氣就是指脾氣毛病，現今修行，是要改脾氣，去毛病。符合儒家所提倡的修內聖（修內涵），大開普渡時修行不能只修內聖，還要行外王，就是要渡自己的有緣人。","en":"And now, in cultivating the Way, one need not leave home. Along with alcohol, desire, and wealth, there is still one missing item: qi, which refers to temper and faults. Cultivation today is to change one\u0027s temper and remove faults. This accords with the Confucian teaching of cultivating inner sagehood, that is, cultivating inner substance. During the great opening of universal salvation, cultivation cannot only cultivate inner sagehood; it must also practice outer kingship, which means guiding one\u0027s own people with affinity.","vi":"Hiện nay tuĐạokhôngcầnxuấtgia. Phốihợpvớirượu, sắc, tài, cònthiếumộtchữkhí; khílàchỉtínhkhívàtậtxấu. Tu hànhhiện nay làphảisửatínhkhí, bỏtậtxấu. Điềunàyphùhợpvới Nho giađềxướngtunộithánh, tứctunộihàm. Khi đạikhaiphổđộ, tuhànhkhôngthểchỉtunộithánh, cònphảihànhngoạivương, tứclàđộnhữngngườihữuduyêncủamình."}},{"id":"p68","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"當渡人時要注意，有幾種人暫時不能求道。有職業不符合的，不符合道德的職業，如殺豬宰羊等（殺盜淫），若有心求道，必須更改職業即可（佛曰：「放下屠刀，立地成佛。」）另有六根不全者（殘障者）、（背後也許有很複雜的因果）若有心求道，必須全家一齊來求道，全家人的功德幫補他，才可以求道。渡人時只有這白陽期三寶的用法不要講，其他有關做人的道理以及今天後學所說的，都可以告訴他。","en":"When guiding people, pay attention that there are several kinds of people who temporarily cannot seek the Way. Some have unsuitable occupations, occupations that do not accord with morality, such as slaughtering pigs and sheep, and so on, killing, stealing, and sexual misconduct. If they sincerely wish to seek the Way, they need only change their occupation. The Buddha said, \"Lay down the butcher\u0027s knife and become a Buddha on the spot.\" There are also those whose six faculties are incomplete, people with disabilities; there may be very complicated causes and effects behind this. If they sincerely wish to seek the Way, the whole family must come together to seek the Way, and the merit of the whole family helps support them, only then can they seek the Way. When guiding people, only the method of using the Three Treasures of this White Yang period should not be spoken. Other principles concerning how to be a person, as well as what I have said today, may all be told to them.","vi":"Khi độngườiphảichú ý, cóvàihạngngườitạmthờichưathểcầuĐạo. Cóngườinghềnghiệpkhôngphùhợp, lànghềkhônghợpđạođức, nhưgiếtheomổdê v.v. thuộcsát, đạo, dâm; nếucólòngcầuĐạothìchỉcầnđổinghềlàđược. Phậtnói: “Buông dao đồtể, lậpđịathànhPhật.” Lạicóngườilụccănkhôngtoàn, ngườikhuyếttật; phíasaucólẽcónhânquảrấtphứctạp. NếucólòngcầuĐạo, phảicảnhàcùngđếncầuĐạo, côngđứccủacảnhàgiúpbùđắpchongườiấy, mớicóthểcầuĐạo. Khi độngười, chỉcócáchdùng Tam Bảo thời Bạch Dương nàylàkhôngđượcnói; nhữngđạolýlàmngườikhácvànhữngđiềuhậuhọcnóihôm nay đềucóthểnóichohọ."}},{"id":"p69","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"現在就來學三寶。第一寶玄關，第二寶口訣，第三寶合同。","en":"Now let us learn the Three Treasures: the First Treasure, the Mystic Portal; the Second Treasure, the oral formula; and the Third Treasure, the Hand Seal.","vi":"Bâygiờhãyhọc Tam Bảo: Bảo thứnhấtHuyền Quan, Bảo thứhaiKhẩu Quyết, Bảo thứ ba HợpĐồng."}},{"id":"p70","color":"#6d4aa2","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"以上是三寶的用法，用時要三寶一齊用。","en":"The above is the method of using the Three Treasures. When using them, the Three Treasures must be used together.","vi":"Trênđâylàcáchdùng Tam Bảo. Khi dùngphảidùngđủcả Tam Bảo."}},{"id":"p71","color":"#8a6a1f","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"三寶何時能用呢？","en":"When can the Three Treasures be used?","vi":"Khi nàocóthểdùng Tam Bảo?"}},{"id":"p72","color":"#4f6f52","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"三寶必須等生命有危險，人力無法抗拒時才用。","en":"The Three Treasures must be used only when life is in danger and human strength cannot resist.","vi":"Tam Bảo phảiđợikhisinhmạnggặpnguyhiểm, sứcngườikhôngthểchốnglại, mớiđượcdùng."}},{"id":"p73","color":"#244f7a","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"例如：坐車翻車，坐船沉船，搭飛機失事等天災地變時就可以用，幷發出誠心，仙佛即時會來解救我們。若遇上後天的事業，事情不如意，頭痛等不要用，因為這是人為的，只要自己小心處理即能解決。","en":"For example, in natural disasters or sudden changes such as a car overturning, a boat sinking, or an airplane accident, they may be used. If one also gives rise to sincere faith, immortals and Buddhas will immediately come to rescue us. If one encounters later-world affairs such as business not going well, things not being as desired, headaches, and so on, do not use them, because these are human-made matters; as long as one handles them carefully, they can be resolved.","vi":"Vídụ: khiđixebịlật, đithuyềnbịchìm, đimáy bay gặpsựcố, hoặccácthiên tai địabiếnthìcóthểdùng, đồngthờiphát ra lòngthành, Tiên Phậtsẽlậptứcđếncứugiúpchúng ta. Nếugặpchuyệnhậuthiênnhưsựnghiệpkhôngthuận, việckhôngnhư ý, đauđầu v.v. thìkhôngnêndùng, vìđólàviệc do con người, chỉcầntựmìnhcẩnthậnxửlýlàcóthểgiảiquyết."}},{"id":"p74","color":"#2f7d4c","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"三寶是天機，不能洩漏，為何今天後學能與大家研究透露這麼多呢？","en":"The Three Treasures are a heavenly secret and cannot be revealed. Why, then, can I study and disclose so much with everyone today?","vi":"Tam Bảo làthiêncơ, khôngthểtiếtlộ. Vìsaohôm nay hậuhọccóthểcùngmọingườinghiêncứuvàtiếtlộnhiềunhưvậy?"}},{"id":"p75","color":"#a44e32","size":22,"align":"left","title":{"zh":"","en":"","vi":""},"body":{"zh":"因為在我們求道之前點傳師有請壇，請諸天神聖以及仙佛在佛堂百步之內護法，所以才能來解說三寶裏的天機，等一下若是佛燈送熄後，已經沒有仙佛護壇，就不能再說三寶，也不能再互相提問回答，更不能寫下來，以免洩漏天機。要是怕忘記，等下次有像今天這種辦道機會，我們再出來學習。現在趁佛燈未熄，請在壇的人才跟我們一起學習三寶。現在三寶就與大家共同研究到此，祝大家身體健康，萬事如意。","en":"Because before we sought the Way, the transmitting master invited the altar, inviting all heavenly spirits and sages as well as immortals and Buddhas to protect the Dharma within one hundred steps of the Buddha hall. Therefore we can explain the heavenly secrets within the Three Treasures. Later, if the Buddha lamp is extinguished, there will no longer be immortals and Buddhas protecting the altar, so the Three Treasures can no longer be spoken about, nor can we ask and answer questions with one another, and we certainly cannot write them down, lest Heaven\u0027s secret be revealed. If you are afraid of forgetting, then next time there is an occasion for conducting the Way like today, we can come out again to study. Now, while the Buddha lamp has not yet been extinguished, please let the altar personnel learn the Three Treasures together with us. Our shared study of the Three Treasures ends here. I wish everyone good health and success in all things.","vi":"Bởivìtrướckhichúng ta cầuĐạo, điểmtruyềnsưđãthỉnhđàn, thỉnhchưthiênthầnthánhcùng Tiên Phậttrongphạm vi trămbướccủaPhậtđườnghộpháp, nênmớicóthểgiảithíchthiêncơtrong Tam Bảo. LátnữanếuPhậtđăngtắtrồi, khôngcòn Tiên Phậthộđàn, thìkhôngthểnói Tam Bảo nữa, cũngkhôngthểhỏiđáplẫnnhau, càngkhôngthểviếtxuống, đểtránhtiếtlộthiêncơ. Nếusợquên, lầnsaucócơhộibànĐạonhưhôm nay, chúng ta lạirahọctập. Nay nhânlúcPhậtđăngchưatắt, xinnhântàitrongđàncùngchúng ta học Tam Bảo. Hôm nay Tam Bảo cùngmọingườinghiêncứuđếnđây, chúcmọingườithânthểkhỏemạnh, vạnsựnhư ý."}}];
+    const languageNames = { zh: '\u4e2d\u6587', en: 'English', vi: 'Ti\u1ebfng Vi\u1ec7t' };
+    const allLanguages = ['zh', 'en', 'vi'];
+    const storageKey = 'sanbao1987-pages-v2-1987-2026-document';
+    const brokenTextChars = [0x00e4, 0x00e5, 0x00e6, 0x00e7, 0x00e8, 0x00e9, 0x00c3, 0x00c4, 0x00c5, 0x00c2, 0xfffd].map(code => String.fromCharCode(code));
+    const state = {
+      slides: seed,
+      active: 0,
+      view: 'zh',
+      voice: '',
+      voices: [],
+      present: false,
+      displayMode: 'standard',
+      touchStartX: null
+    };
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (!brokenTextChars.some(char => JSON.stringify(parsed).includes(char))) state.slides = parsed;
+      } catch {}
+    }
+    function save() { localStorage.setItem(storageKey, JSON.stringify(state.slides)); }
+    function pageText(slide, lang) { return [slide.title[lang], slide.body[lang]].filter(Boolean).join('\\n\\n'); }
+    function previewText(slide) {
+      const primary = state.view === 'compare' ? 'zh' : state.view;
+      return slide.title[primary] || slide.body[primary] || slide.title.zh || slide.body.zh || slide.title.en || slide.body.en || slide.title.vi || slide.body.vi;
+    }
+    function updateSlide(patch) {
+      state.slides[state.active] = { ...state.slides[state.active], ...patch };
+      save();
+      render();
+    }
+    function updateText(field, lang, value) {
+      const slide = state.slides[state.active];
+      updateSlide({ [field]: { ...slide[field], [lang]: value } });
+    }
+    function speak(lang) {
+      speechSynthesis.cancel();
+      const text = pageText(state.slides[state.active], lang);
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang === 'zh' ? 'zh-TW' : lang === 'vi' ? 'vi-VN' : 'en-US';
+      const chosen = state.voices.find(v => v.name === state.voice) || state.voices.find(v => v.lang.toLowerCase().startsWith(utterance.lang.slice(0, 2)));
+      if (chosen) utterance.voice = chosen;
+      speechSynthesis.speak(utterance);
+    }
+    function previousSlide() {
+      state.active = Math.max(0, state.active - 1);
+      render();
+    }
+    function nextSlide() {
+      state.active = Math.min(state.slides.length - 1, state.active + 1);
+      render();
+    }
+    function presentTextSize(text) {
+      if (text.length > 900) return 'clamp(12px, 1.05vw, 20px)';
+      if (text.length > 560) return 'clamp(14px, 1.28vw, 24px)';
+      return 'clamp(17px, 1.65vw, 32px)';
+    }
+    function openPresentation(mode) {
+      state.displayMode = mode;
+      state.present = true;
+      if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+      render();
+    }
+    function duplicatePage() {
+      const slide = state.slides[state.active];
+      const copy = JSON.parse(JSON.stringify(slide));
+      copy.id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+      state.slides.splice(state.active + 1, 0, copy);
+      state.active += 1;
+      save();
+      render();
+    }
+    function addPage() {
+      state.slides.splice(state.active + 1, 0, {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        color: '#244f7a',
+        size: 22,
+        align: 'left',
+        title: { zh: '', en: '', vi: '' },
+        body: { zh: '', en: '', vi: '' }
+      });
+      state.active += 1;
+      save();
+      render();
+    }
+    function deletePage() {
+      if (state.slides.length <= 1) return;
+      state.slides.splice(state.active, 1);
+      state.active = Math.max(0, state.active - 1);
+      save();
+      render();
+    }
+    function loadVoices() {
+      state.voices = speechSynthesis.getVoices().filter(v => /zh|en|vi/i.test(v.lang));
+      render();
+    }
+    speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+    addEventListener('keydown', event => {
+      if (!state.present) return;
+      if (event.key === 'Escape') { state.present = false; render(); }
+      if (event.key === 'ArrowRight') nextSlide();
+      if (event.key === 'ArrowLeft') previousSlide();
+    });
+    function render() {
+      const slide = state.slides[state.active];
+      const langs = state.view === 'compare' ? allLanguages : [state.view];
+      const activePresentLang = state.view === 'compare' ? 'zh' : state.view;
+      const activePresentText = pageText(slide, activePresentLang);
+      const root = document.getElementById('app');
+      root.innerHTML = `
+        <div class="app">
+          <aside>
+            <h1>&#19977;&#23542; 1987</h1>
+            <div class="small">Trilingual editor</div>
+            <div class="tabs">
+              ${['zh','en','vi','compare'].map(v => `<button class="${state.view === v ? 'active' : ''}" data-view="${v}">${v === 'compare' ? 'Compare' : languageNames[v]}</button>`).join('')}
+            </div>
+            <div>${state.slides.map((s, index) => `<button class="thumb ${index === state.active ? 'active' : ''}" data-active="${index}">${index + 1}. ${previewText(s).slice(0, 80)}</button>`).join('')}</div>
+          </aside>
+          <main>
+            <div class="actions">
+              <button data-present-mode="standard">Present</button>
+              <button data-present-mode="projector">Projector</button>
+              <button data-present-mode="obs">OBS</button>
+              <button data-add="1">Add</button>
+              <button data-duplicate="1">Duplicate</button>
+              <button data-delete="1">Delete</button>
+              <button data-speak="${state.view === 'compare' ? 'zh' : state.view}">Read</button>
+            </div>
+            <div class="tools">
+              <label>Font <input type="range" min="16" max="42" value="${slide.size}" data-size></label>
+              <label>Color <input type="color" value="${slide.color}" data-color></label>
+              <label>Align
+                <select data-align>
+                  ${['left','center','right'].map(a => `<option ${slide.align === a ? 'selected' : ''}>${a}</option>`).join('')}
+                </select>
+              </label>
+              <label>Voice
+                <select data-voice>
+                  <option value="">Auto</option>
+                  ${state.voices.map(v => `<option value="${v.name}" ${state.voice === v.name ? 'selected' : ''}>${v.name} ${v.lang}</option>`).join('')}
+                </select>
+              </label>
+            </div>
+            <section class="page" style="--accent:${slide.color}; text-align:${slide.align};">
+              <div class="lanes ${state.view === 'compare' ? 'compare' : ''}">
+                ${langs.map(lang => `
+                  <div class="lane">
+                    <div class="label">${languageNames[lang]}</div>
+                    <textarea class="page-title" style="font-size:${slide.size + 8}px; text-align:${slide.align};" data-title="${lang}" placeholder="${languageNames[lang]} title">${slide.title[lang]}</textarea>
+                    <textarea class="page-body" style="font-size:${slide.size}px; text-align:${slide.align};" data-body="${lang}" placeholder="${languageNames[lang]} text">${slide.body[lang]}</textarea>
+                    <button data-speak="${lang}">Listen</button>
+                  </div>
+                `).join('')}
+              </div>
+            </section>
+          </main>
+        </div>
+        ${state.present ? `
+          <div class="presenting ${state.displayMode}" data-present-area="1">
+            <button class="present-close" data-close="1">Close</button>
+            <div class="mode-badge">${state.displayMode === 'projector' ? 'Projector mode' : state.displayMode === 'obs' ? 'OBS mode' : 'Presentation'}</div>
+            <div class="present-card" style="text-align:${slide.align};">
+              <div class="present-text" style="font-size:${presentTextSize(activePresentText)}; color:${slide.color};">${activePresentText}</div>
+            </div>
+            <div class="present-nav">
+              <span>${state.active + 1} of ${state.slides.length}</span>
+              <div>
+                <button data-prev="1" ${state.active === 0 ? 'disabled' : ''}>Previous</button>
+                <button data-next="1" ${state.active === state.slides.length - 1 ? 'disabled' : ''}>Next</button>
+                <button data-speak="${state.view === 'compare' ? 'zh' : state.view}">Listen</button>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+      `;
+      root.querySelectorAll('[data-view]').forEach(button => button.onclick = () => { state.view = button.dataset.view; render(); });
+      root.querySelectorAll('[data-active]').forEach(button => button.onclick = () => { state.active = Number(button.dataset.active); render(); });
+      root.querySelectorAll('[data-title]').forEach(input => input.oninput = () => updateText('title', input.dataset.title, input.value));
+      root.querySelectorAll('[data-body]').forEach(input => input.oninput = () => updateText('body', input.dataset.body, input.value));
+      root.querySelector('[data-size]').oninput = event => updateSlide({ size: Number(event.target.value) });
+      root.querySelector('[data-color]').oninput = event => updateSlide({ color: event.target.value });
+      root.querySelector('[data-align]').onchange = event => updateSlide({ align: event.target.value });
+      root.querySelector('[data-voice]').onchange = event => { state.voice = event.target.value; };
+      root.querySelectorAll('[data-present-mode]').forEach(button => button.onclick = () => openPresentation(button.dataset.presentMode));
+      root.querySelector('[data-add]').onclick = addPage;
+      root.querySelector('[data-duplicate]').onclick = duplicatePage;
+      root.querySelector('[data-delete]').onclick = deletePage;
+      root.querySelectorAll('[data-speak]').forEach(button => button.onclick = () => speak(button.dataset.speak));
+      const close = root.querySelector('[data-close]');
+      if (close) close.onclick = () => { state.present = false; render(); };
+      const prev = root.querySelector('[data-prev]');
+      if (prev) prev.onclick = event => { event.stopPropagation(); previousSlide(); };
+      const next = root.querySelector('[data-next]');
+      if (next) next.onclick = event => { event.stopPropagation(); nextSlide(); };
+      const presentArea = root.querySelector('[data-present-area]');
+      if (presentArea) {
+        presentArea.onclick = event => {
+          if (event.target.closest('button')) return;
+          nextSlide();
+        };
+        presentArea.ontouchstart = event => {
+          state.touchStartX = event.touches[0] ? event.touches[0].clientX : null;
+        };
+        presentArea.ontouchend = event => {
+          if (state.touchStartX === null) return;
+          const endX = event.changedTouches[0] ? event.changedTouches[0].clientX : state.touchStartX;
+          const distance = endX - state.touchStartX;
+          state.touchStartX = null;
+          if (Math.abs(distance) < 45) return;
+          if (distance < 0) nextSlide();
+          else previousSlide();
+        };
+      }
+    }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+    render();
+  </script>
+</body>
+</html>
